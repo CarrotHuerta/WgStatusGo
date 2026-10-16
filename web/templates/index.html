@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>WireGuard Status</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- System Notice (Dev / Mock Mode only) -->
+        <div id="demo-mode-banner" class="system-notice" style="display: none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <span><strong>Development Mode:</strong> WireGuard binary not detected locally. Showing simulated telemetry data. Live metrics activate automatically on Linux.</span>
+        </div>
+
+        <!-- Header / Navigation Bar -->
+        <header class="top-bar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span class="brand-title">WireGuard Status</span>
+                    <span class="brand-tag">v2.5</span>
+                </div>
+            </div>
+            <div class="top-actions" style="display: flex; align-items: center; gap: 8px;">
+                <button id="analytics-btn" class="btn btn-sm" data-action="open-analytics" title="Traffic analytics: busiest hours &amp; ISP ranking">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Analytics</span>
+                </button>
+                <div class="dropdown-wrapper">
+                    <button id="export-menu-btn" class="btn btn-sm" data-action="toggle-export-menu" title="Export Data & Reports">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Export</span>
+                    </button>
+                    <div id="export-dropdown" class="dropdown-menu" style="display: none;">
+                        <button type="button" class="dropdown-item" data-action="download" data-url="/api/export/peers?format=csv">
+                            <span class="file-tag csv">CSV</span> Export Peers (.csv)
+                        </button>
+                        <button type="button" class="dropdown-item" data-action="download" data-url="/api/export/peers?format=xlsx">
+                            <span class="file-tag xlsx">XLSX</span> Export Peers (.xlsx)
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item" data-action="download" data-url="/api/export/sessions?format=csv">
+                            <span class="file-tag csv">CSV</span> All Sessions (.csv)
+                        </button>
+                        <button type="button" class="dropdown-item" data-action="download" data-url="/api/export/sessions?format=xlsx">
+                            <span class="file-tag xlsx">XLSX</span> All Sessions (.xlsx)
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item" data-action="download" data-url="/api/export/analytics?range=7d&format=csv">
+                            <span class="file-tag csv">CSV</span> Analytics 7d (.csv)
+                        </button>
+                        <button type="button" class="dropdown-item" data-action="download" data-url="/api/export/analytics?range=7d&format=xlsx">
+                            <span class="file-tag xlsx">XLSX</span> Analytics 7d (.xlsx)
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item" data-action="download" data-url="/api/export/report?format=xlsx" style="font-weight: 600;">
+                            <span class="file-tag xlsx">REPORT</span> Full Audit Report (.xlsx)
+                        </button>
+                    </div>
+                </div>
+
+                <button id="theme-toggle-btn" class="btn btn-sm" data-action="toggle-theme" aria-label="Toggle theme">
+                    <svg id="theme-icon-sun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg id="theme-icon-moon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    <span id="theme-label">Light</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Metric Panels -->
+        <section class="metrics-row">
+            <div class="metric-panel">
+                <div class="metric-label">Online Peers</div>
+                <div class="metric-value tnum" id="metric-online-peers">-- / --</div>
+                <div class="metric-foot"><span id="metric-since-restart">--</span> connected since boot</div>
+            </div>
+            <div class="metric-panel metric-clickable" data-action="server-chart-open" title="Click to toggle Server Total Traffic graph">
+                <div class="metric-label">Download Rate</div>
+                <div class="metric-value tnum" id="metric-down-rate" style="color: var(--chart-rx);">--</div>
+                <div class="metric-foot">Aggregate throughput (RX)</div>
+            </div>
+            <div class="metric-panel metric-clickable" data-action="server-chart-open" title="Click to toggle Server Total Traffic graph">
+                <div class="metric-label">Upload Rate</div>
+                <div class="metric-value tnum" id="metric-up-rate" style="color: var(--chart-tx);">--</div>
+                <div class="metric-foot">Aggregate throughput (TX)</div>
+            </div>
+            <div class="metric-panel">
+                <div class="metric-label">Total Transferred</div>
+                <div class="metric-value tnum" id="metric-total-usage">--</div>
+                <div class="metric-foot">Month: <span id="metric-month-tag">--</span></div>
+            </div>
+        </section>
+
+        <!-- Server Total Traffic Chart Panel -->
+        <div id="server-chart-card" class="chart-panel" style="margin-top: 0; margin-bottom: 18px;">
+            <div class="chart-panel-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    <span class="chart-heading">Total Server Bandwidth</span>
+                    <span class="chart-peer-key" id="server-chart-stats">Live throughput</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="rates-stack tnum" style="flex-direction: row; gap: 10px; font-size: 11px;">
+                        <span class="rate-rx" id="server-chart-rx">&darr; 0 bps</span>
+                        <span class="rate-tx" id="server-chart-tx">&uarr; 0 bps</span>
+                    </div>
+                    <button class="btn btn-sm" id="server-chart-toggle-btn" data-action="server-chart-toggle" title="Collapse / Expand server traffic graph">
+                        <svg id="server-chart-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                        <span id="server-chart-toggle-text">Collapse</span>
+                    </button>
+                </div>
+            </div>
+            <div id="server-chart-wrapper" style="height: 180px; position: relative;">
+                <canvas id="server-bandwidth-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Action / Filter Toolbar -->
+        <div class="action-bar">
+            <div class="search-field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="search-input" placeholder="Search device name, IP, endpoint, or ISP..." data-input="search">
+            </div>
+            <div class="filter-group">
+                <button class="filter-btn" data-action="filter" data-filter="all">All</button>
+                <button class="filter-btn active" data-action="filter" data-filter="online">Online</button>
+                <button class="filter-btn" data-action="filter" data-filter="since_restart">Since Restart</button>
+                <button class="filter-btn" data-action="filter" data-filter="offline">Offline</button>
+            </div>
+        </div>
+
+        <!-- Data Table Container -->
+        <div class="data-table-container">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Device / Address</th>
+                            <th>Endpoint</th>
+                            <th>ISP / Network</th>
+                            <th>Ping</th>
+                            <th>Current Session</th>
+                            <th>Monthly Usage</th>
+                            <th>Throughput</th>
+                            <th>Status / Last Seen</th>
+                            <th style="text-align: right; width: 140px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="status-table-body">
+                        <tr id="loading-row">
+                            <td colspan="9" style="text-align: center; padding: 30px; color: var(--text-dim);">
+                                Loading peers...
+                            </td>
+                        </tr>
+                        <tr id="empty-filter-row" style="display: none;">
+                            <td colspan="9" style="text-align: center; padding: 24px; color: var(--text-dim);">
+                                No peers match the current filter.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Historical Bandwidth Chart (collapsible) -->
+        <div id="bandwidth-chart-card" class="chart-panel" style="display: none;">
+            <div class="chart-panel-header">
+                <div>
+                    <span class="chart-heading">Bandwidth Telemetry</span>
+                    <span class="chart-peer-key" id="chart-peer-title">--</span>
+                </div>
+                <button class="btn btn-sm" data-action="close-chart">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    Close
+                </button>
+            </div>
+            <div style="height: 240px; position: relative;">
+                <canvas id="bandwidth-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Historical Connection Log Modal (collapsible) -->
+        <div id="history-modal" class="modal-backdrop" data-action="backdrop-history">
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>Device History &amp; Monthly Telemetry</span>
+                        <span id="modal-peer-ip" class="col-mono" style="color: var(--text-main); margin-left: 6px;">--</span>
+                    </div>
+                    <button class="btn btn-sm" data-action="close-history">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Mini stats grid -->
+                    <div class="history-stats-grid">
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Month Total</div>
+                            <div class="history-stat-val tnum" id="hist-stat-monthly">--</div>
+                        </div>
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Month Download</div>
+                            <div class="history-stat-val tnum" id="hist-stat-rx" style="color: var(--chart-rx);">--</div>
+                        </div>
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Month Upload</div>
+                            <div class="history-stat-val tnum" id="hist-stat-tx" style="color: var(--chart-tx);">--</div>
+                        </div>
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Last Ping</div>
+                            <div class="history-stat-val tnum" id="hist-stat-ping">--</div>
+                        </div>
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Since Boot</div>
+                            <div class="history-stat-val" id="hist-stat-boot">--</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; margin-bottom: 8px;">
+                        <div class="section-subhead" style="margin: 0;">Recent Connection Sessions</div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-sm" data-action="export-peer-sessions" data-format="csv" title="Export this device sessions as CSV">
+                                <span class="file-tag csv">CSV</span> Export
+                            </button>
+                            <button class="btn btn-sm" data-action="export-peer-sessions" data-format="xlsx" title="Export this device sessions as Excel">
+                                <span class="file-tag xlsx">XLSX</span> Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Connected At</th>
+                                    <th>Endpoint</th>
+                                    <th>ISP / Network</th>
+                                    <th>Ping</th>
+                                    <th>Traffic (RX / TX)</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-sessions-body">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-dim);">
+                                        Loading connection history...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Alias Modal -->
+        <div id="alias-modal" class="modal-backdrop" data-action="backdrop-alias">
+            <div class="modal-dialog" style="max-width: 440px;">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                        <span>Device Nickname</span>
+                    </div>
+                    <button class="btn btn-sm" data-action="close-alias">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 6px;">
+                        Address: <strong id="alias-modal-ip" class="col-mono" style="color: var(--text-main);">--</strong>
+                    </div>
+                    <div id="alias-modal-conf-row" style="font-size: 12px; color: var(--text-dim); margin-bottom: 14px;">
+                        wg0.conf comment: <span id="alias-modal-conf-name" style="color: var(--text-muted); font-style: italic;">--</span>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;">Device Name</label>
+                        <input type="text" id="alias-input" class="text-input" placeholder="e.g. My Personal Laptop" data-enter="save-alias">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                        <button class="btn btn-sm" data-action="reset-alias" title="Reset to wg0.conf comment">Reset</button>
+                        <button class="btn btn-sm btn-primary" data-action="save-alias">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Password Authentication Modal -->
+        <div id="export-auth-modal" class="modal-backdrop" data-action="backdrop-auth">
+            <div class="modal-dialog" style="max-width: 400px;">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <span>Export Authentication</span>
+                    </div>
+                    <button class="btn btn-sm" data-action="close-auth">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 14px; line-height: 1.4;">
+                        Please enter the server password to export data and reports.
+                    </p>
+                    <div style="margin-bottom: 12px;">
+                        <input type="password" id="export-password-input" class="text-input" placeholder="Server password" data-enter="submit-auth">
+                    </div>
+                    <div id="export-auth-error" style="color: var(--danger-color, #ef4444); font-size: 12px; margin-bottom: 12px; display: none;"></div>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                        <button class="btn btn-sm" data-action="close-auth">Cancel</button>
+                        <button class="btn btn-sm btn-primary" id="btn-submit-export-auth" data-action="submit-auth">Verify &amp; Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Analytics Modal -->
+        <div id="analytics-modal" class="modal-backdrop" data-action="backdrop-analytics">
+            <div class="modal-dialog analytics-dialog">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span>Network Analytics</span>
+                        <span id="analytics-demo-tag" class="alias-badge" style="display: none;" title="Simulated dataset (demo mode)">Demo data</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="pill-group" id="analytics-range-pills">
+                            <button class="pill-btn" data-action="analytics-range" data-range="24h">24h</button>
+                            <button class="pill-btn active" data-action="analytics-range" data-range="7d">7d</button>
+                            <button class="pill-btn" data-action="analytics-range" data-range="30d">30d</button>
+                            <button class="pill-btn" data-action="analytics-range" data-range="all">All time</button>
+                        </div>
+                        <button class="btn btn-sm" data-action="close-analytics" aria-label="Close analytics">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="history-stats-grid">
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Total Traffic</div>
+                            <div class="history-stat-val tnum" id="an-total">--</div>
+                            <div class="history-stat-sub" id="an-total-sub">&nbsp;</div>
+                        </div>
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Busiest Hour</div>
+                            <div class="history-stat-val tnum" id="an-peak-hour">--</div>
+                            <div class="history-stat-sub" id="an-peak-hour-sub">&nbsp;</div>
+                        </div>
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Top Network</div>
+                            <div class="history-stat-val an-ellipsis" id="an-top-isp">--</div>
+                            <div class="history-stat-sub" id="an-top-isp-sub">&nbsp;</div>
+                        </div>
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Networks Seen</div>
+                            <div class="history-stat-val tnum" id="an-networks">--</div>
+                            <div class="history-stat-sub" id="an-networks-sub">&nbsp;</div>
+                        </div>
+                        <div class="history-stat-card">
+                            <div class="history-stat-label">Peak Throughput</div>
+                            <div class="history-stat-val tnum" id="an-peak-rate">--</div>
+                            <div class="history-stat-sub" id="an-peak-rate-sub">&nbsp;</div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="section-subhead" id="an-series-title">Traffic over time</div>
+                            <div class="analytics-chart"><canvas id="analytics-series-chart"></canvas></div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="section-subhead">Traffic by hour of day <span style="text-transform: none; font-weight: 400;">(avg per day, by network)</span></div>
+                            <div class="analytics-chart"><canvas id="analytics-hod-chart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 18px; margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <div class="section-subhead" style="margin: 0;">ISP / Network ranking</div>
+                            <div class="pill-group" id="analytics-sort-pills">
+                                <button class="pill-btn active" data-action="analytics-sort" data-sort="total">Traffic</button>
+                                <button class="pill-btn" data-action="analytics-sort" data-sort="sessions">Sessions</button>
+                                <button class="pill-btn" data-action="analytics-sort" data-sort="active_seconds">Time online</button>
+                                <button class="pill-btn" data-action="analytics-sort" data-sort="devices">Devices</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-sm" data-action="analytics-export" data-format="csv" title="Export these analytics as CSV">
+                                <span class="file-tag csv">CSV</span> Export
+                            </button>
+                            <button class="btn btn-sm" data-action="analytics-export" data-format="xlsx" title="Export these analytics as Excel">
+                                <span class="file-tag xlsx">XLSX</span> Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="analytics-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 34px;">#</th>
+                                    <th>ISP / Network</th>
+                                    <th style="min-width: 190px;">Traffic</th>
+                                    <th>&darr; / &uarr;</th>
+                                    <th>Sessions</th>
+                                    <th>Devices</th>
+                                    <th>Time online</th>
+                                    <th>Peak hour</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analytics-isp-body">
+                                <tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-dim);">Loading analytics...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="analytics-note" id="an-note"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bar">
+            WireGuard Dashboard &bull; Port 5010 &bull; Stealth Dark &bull; Auto-refresh 1s
+        </div>
+    </div>
+
+    <!-- Client Scripts (all first-party; no inline handlers, see CSP) -->
+    <script src="/static/vendor/chart.umd.js"></script>
+    <script src="/static/js/bandwidth_chart.js"></script>
+    <script src="/static/js/analytics.js"></script>
+    <script src="/static/js/scripts.js"></script>
+</body>
+</html>

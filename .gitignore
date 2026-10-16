@@ -1,0 +1,11 @@
+/wgstatus
+/wgstatus-*
+*.exe
+data/*.json
+data/*.bak
+archives/*.gz
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
